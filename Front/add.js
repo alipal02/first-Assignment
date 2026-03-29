@@ -14,10 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const background = document.getElementById('background').value.trim();
 
         const newMovie = {
-            id: 'local_' + Date.now(),
             title,
-            rating,
-            year,
+            rating: parseFloat(rating) || undefined,
+            year: parseInt(year) || undefined,
             duration,
             genre,
             description,
@@ -25,10 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
             background: background || ""
         };
 
-        const userMovies = JSON.parse(localStorage.getItem('userMovies')) || [];
-        userMovies.unshift(newMovie);
-        localStorage.setItem('userMovies', JSON.stringify(userMovies));
-
-        window.location.href = 'index.html';
+        fetch('/movies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMovie)
+        }).then(res => {
+            if (res.ok) {
+                window.location.href = 'index.html';
+            } else {
+                res.json().then(data => alert("Error: " + data.error));
+            }
+        }).catch(err => console.error("Network Error:", err));
     });
 });

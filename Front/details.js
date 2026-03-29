@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.onload = () => {
   const bgContainer = document.getElementById("bg-container");
   const posterEl = document.getElementById("d-poster");
   const titleEl = document.getElementById("d-title");
@@ -22,10 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const targetIndex = parseInt(indexStr, 10);
 
     try {
-      const response = await fetch("data.json");
-      const fetchedMovies = await response.json();
-      const userMovies = JSON.parse(localStorage.getItem("userMovies")) || [];
-      const movies = [...userMovies, ...fetchedMovies];
+      const response = await fetch("/movies");
+      const movies = await response.json();
 
       if (targetIndex >= 0 && targetIndex < movies.length) {
         renderMovie(movies[targetIndex]);
@@ -128,4 +126,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initDetails();
-});
+};

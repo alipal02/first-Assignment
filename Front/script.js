@@ -19,15 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fetch movies from local JSON (or network endpoint)
   async function fetchMovies() {
     try {
-      // Using dummy JSON representing a Fetch API request
-      const response = await fetch("data.json");
+      // Fetch from the Native NodeJS backend API
+      const response = await fetch("/movies");
       if (!response.ok) {
         throw new Error("Network response was not OK");
       }
-      const fetchedMovies = await response.json();
-      
-      const userMovies = JSON.parse(localStorage.getItem('userMovies')) || [];
-      movies = [...userMovies, ...fetchedMovies];
+      movies = await response.json();
 
       // Initialization flow
       initApp();
