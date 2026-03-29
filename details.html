@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Details - StreamVault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .details-container {
+      display: flex;
+      gap: 50px;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+    .details-poster {
+      width: 300px;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+      flex-shrink: 0;
+    }
+    .details-info {
+      flex: 1;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+    .back-btn:hover {
+      color: white;
+    }
+    @media (max-width: 768px) {
+      .details-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-container" id="bg-container">
+    <div class="overlay"></div>
+  </div>
+
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <span class="badge">NEW</span>
+        <span class="logo-text">MOVIE</span>
+      </div>
+    </header>
+
+    <main style="max-width: 1000px; margin: 0 auto; width: 100%;">
+      <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+      
+      <div class="details-container">
+        <img id="d-poster" class="details-poster skeleton" src="" alt="Poster" />
+        
+        <div class="details-info">
+          <h1 id="d-title" class="skeleton skeleton-text"></h1>
+          
+          <div class="meta-data">
+            <span class="imdb">IMDb</span>
+            <span id="d-rating" class="skeleton skeleton-text skeleton-small"></span>
+            <span class="dot">•</span>
+            <span id="d-year" class="skeleton skeleton-text skeleton-small"></span>
+            <span class="dot">•</span>
+            <span id="d-duration" class="skeleton skeleton-text skeleton-small"></span>
+            <span class="dot">•</span>
+            <span id="d-genre" class="skeleton skeleton-text skeleton-small"></span>
+          </div>
+
+          <p id="d-desc" class="description skeleton skeleton-text skeleton-large" style="-webkit-line-clamp: unset;"></p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="details.js"></script>
+</body>
+</html>

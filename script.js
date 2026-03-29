@@ -1,221 +1,253 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Select DOM Elements
-    const bgContainer = document.getElementById('bg-container');
-    const titleEl = document.getElementById('m-title');
-    const ratingEl = document.getElementById('m-rating');
-    const yearEl = document.getElementById('m-year');
-    const durationEl = document.getElementById('m-duration');
-    const genreEl = document.getElementById('m-genre');
-    const descEl = document.getElementById('m-desc');
-    const carouselEl = document.getElementById('carousel');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+document.addEventListener("DOMContentLoaded", () => {
+  // Select DOM Elements
+  const bgContainer = document.getElementById("bg-container");
+  const titleEl = document.getElementById("m-title");
+  const ratingEl = document.getElementById("m-rating");
+  const yearEl = document.getElementById("m-year");
+  const durationEl = document.getElementById("m-duration");
+  const genreEl = document.getElementById("m-genre");
+  const descEl = document.getElementById("m-desc");
+  const carouselEl = document.getElementById("carousel");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
 
-    // State Variables
-    let movies = [];
-    let currentIndex = 0;
-    let isTransitioning = false;
+  // State Variables
+  let movies = [];
+  let currentIndex = 0;
+  let isTransitioning = false;
 
-    // Fetch movies from local JSON (or network endpoint)
-    async function fetchMovies() {
-        try {
-            // Using dummy JSON representing a Fetch API request
-            const response = await fetch('data.json');
-            if (!response.ok) {
-                throw new Error('Network response was not OK');
+  // Fetch movies from local JSON (or network endpoint)
+  async function fetchMovies() {
+    try {
+      // Using dummy JSON representing a Fetch API request
+      const response = await fetch("data.json");
+      if (!response.ok) {
+        throw new Error("Network response was not OK");
+      }
+      const fetchedMovies = await response.json();
+      
+      const userMovies = JSON.parse(localStorage.getItem('userMovies')) || [];
+      movies = [...userMovies, ...fetchedMovies];
+
+      // Initialization flow
+      initApp();
+    } catch (error) {
+      console.error("Fetch error:", error);
+      handleError();
+    }
+  }
+
+  function removeSkeletons() {
+    titleEl.classList.remove("skeleton", "skeleton-text");
+    ratingEl.classList.remove("skeleton", "skeleton-text", "skeleton-small");
+    yearEl.classList.remove("skeleton", "skeleton-text", "skeleton-small");
+    durationEl.classList.remove("skeleton", "skeleton-text", "skeleton-small");
+    genreEl.classList.remove("skeleton", "skeleton-text", "skeleton-small");
+    descEl.classList.remove("skeleton", "skeleton-text", "skeleton-large");
+  }
+
+  function initApp() {
+    if (!movies || movies.length === 0) return;
+    removeSkeletons();
+    renderCarousel();
+    updateUI(0);
+  }
+
+  function handleError() {
+    titleEl.classList.remove("skeleton", "skeleton-text");
+    titleEl.textContent = "Data Error";
+    descEl.classList.remove("skeleton", "skeleton-text", "skeleton-large");
+    descEl.textContent =
+      "Unable to fetch movie dataset. Ensure data.json exists or check internet connection.";
+  }
+
+  // Build footer carousel dynamically
+  function renderCarousel() {
+    carouselEl.innerHTML = "";
+
+    movies.forEach((movie, index) => {
+      const card = document.createElement("div");
+      card.className = `poster-card ${index === currentIndex ? "active" : ""}`;
+      card.dataset.index = index;
+
+      const safeTitle = encodeURIComponent(movie.title || "Movie");
+      const img = document.createElement("img");
+      img.src =
+        movie.poster ||
+        `https://placehold.co/140x210/1a1a2e/ffffff?text=${safeTitle}`;
+      img.alt = movie.title || "Poster";
+
+      // Fallback for broken image paths
+      img.onerror = function () {
+        this.onerror = null;
+        this.src = `https://placehold.co/140x210/1a1a2e/ffffff?text=${safeTitle}`;
+      };
+
+      // Dynamic TMDB Fetch if images are missing
+      if (!movie.poster && movie.id) {
+        fetch(
+          `https://api.themoviedb.org/3/movie/${movie.id}?api_key=8265bd1679663a7ea12ac168da84d2e8`,
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.poster_path) {
+              movie.poster = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+              img.src = movie.poster; // Update carousel image live
             }
-            movies = await response.json();
-            
-            // Initialization flow
-            initApp();
-        } catch (error) {
-            console.error('Fetch error:', error);
-            handleError();
+            if (data.backdrop_path) {
+              movie.background = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
+              // If this movie is currently active, instantly update its background without re-triggering text animations
+              if (index === currentIndex) {
+                document
+                  .querySelector(".background-container")
+                  .style.setProperty(
+                    "--bg-image",
+                    `url('${movie.background}')`,
+                  );
+              }
+            }
+          })
+          .catch((err) => console.error("TMDB Fetch Error:", err));
+      }
+
+      card.appendChild(img);
+
+      // Interaction: Change active movie
+      card.addEventListener("click", () => {
+        if (currentIndex !== index && !isTransitioning) {
+          updateUI(index);
         }
+      });
+
+      carouselEl.appendChild(card);
+    });
+  }
+
+  function triggerAnimations() {
+    const elementsToAnimate = [
+      titleEl,
+      document.querySelector(".meta-data"),
+      descEl,
+      document.querySelector(".actions"),
+    ];
+
+    elementsToAnimate.forEach((el) => {
+      if (!el) return;
+      // Remove the class
+      el.classList.remove("fade-in-up");
+      // Trigger a reflow
+      void el.offsetWidth;
+      // Add the class back
+      el.classList.add("fade-in-up");
+    });
+  }
+
+  // Update main stage and background
+  function updateUI(index) {
+    if (index < 0 || index >= movies.length) return;
+
+    isTransitioning = true;
+    currentIndex = index;
+    const movie = movies[index];
+
+    // Handle both original JSON and the new TMDB JSON structure seamlessly
+    const mTitle = movie.title || movie.original_title || "Unknown Title";
+    const mRating =
+      movie.vote_average !== undefined
+        ? movie.vote_average.toString()
+        : movie.rating;
+    const mYear = movie.release_date
+      ? movie.release_date.split("/")[2] || movie.release_date.substring(0, 4)
+      : movie.year;
+
+    let mDuration = movie.duration;
+    if (movie.runtime !== undefined) {
+      const hours = Math.floor(movie.runtime / 60);
+      const mins = movie.runtime % 60;
+      mDuration = `${hours} hour${hours > 1 ? "s" : ""} ${mins} minute${mins !== 1 ? "s" : ""}`;
     }
 
-    function removeSkeletons() {
-        titleEl.classList.remove('skeleton', 'skeleton-text');
-        ratingEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-small');
-        yearEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-small');
-        durationEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-small');
-        genreEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-small');
-        descEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-large');
+    const mGenre = movie.genres || movie.genre || "Unknown Genre";
+    const mDesc =
+      movie.overview ||
+      movie.description ||
+      "No description available for this movie.";
+
+    // Background transition - Safe fallbacks for missing image URLs
+    const safeTitleQuery = encodeURIComponent(mTitle);
+    const defaultBg = `https://placehold.co/1920x1080/050505/333333?text=${safeTitleQuery}`;
+    const bgUrl = movie.background || movie.poster || defaultBg;
+
+    bgContainer.style.setProperty("--bg-image", `url('${bgUrl}')`);
+
+    // Text changes
+    titleEl.textContent = mTitle;
+    ratingEl.textContent = mRating;
+    yearEl.textContent = mYear;
+    durationEl.textContent = mDuration;
+    genreEl.textContent = mGenre;
+    descEl.textContent = mDesc;
+
+    const detailsBtn = document.getElementById("details-btn");
+    if (detailsBtn) {
+      detailsBtn.href = `details.html?index=${index}`;
     }
 
-    function initApp() {
-        if (!movies || movies.length === 0) return;
-        removeSkeletons();
-        renderCarousel();
-        updateUI(0);
-    }
+    // Animate newly inserted text
+    triggerAnimations();
 
-    function handleError() {
-        titleEl.classList.remove('skeleton', 'skeleton-text');
-        titleEl.textContent = 'Data Error';
-        descEl.classList.remove('skeleton', 'skeleton-text', 'skeleton-large');
-        descEl.textContent = 'Unable to fetch movie dataset. Ensure data.json exists or check internet connection.';
-    }
+    // Update active class on carousel items
+    const cards = carouselEl.querySelectorAll(".poster-card");
+    cards.forEach((card, i) => {
+      if (i === index) {
+        card.classList.add("active");
 
-    // Build footer carousel dynamically
-    function renderCarousel() {
-        carouselEl.innerHTML = '';
-        
-        movies.forEach((movie, index) => {
-            const card = document.createElement('div');
-            card.className = `poster-card ${index === currentIndex ? 'active' : ''}`;
-            card.dataset.index = index;
-            
-            const safeTitle = encodeURIComponent(movie.title || "Movie");
-            const img = document.createElement('img');
-            img.src = movie.poster || `https://placehold.co/140x210/1a1a2e/ffffff?text=${safeTitle}`;
-            img.alt = movie.title || "Poster";
-            
-            // Fallback for broken image paths
-            img.onerror = function() {
-                this.onerror = null;
-                this.src = `https://placehold.co/140x210/1a1a2e/ffffff?text=${safeTitle}`;
-            };
-            
-            // Dynamic TMDB Fetch if images are missing
-            if (!movie.poster && movie.id) {
-                fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=8265bd1679663a7ea12ac168da84d2e8`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.poster_path) {
-                            movie.poster = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-                            img.src = movie.poster; // Update carousel image live
-                        }
-                        if (data.backdrop_path) {
-                            movie.background = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
-                            // If this movie is currently active, instantly update its background without re-triggering text animations
-                            if (index === currentIndex) {
-                                document.querySelector('.background-container').style.setProperty('--bg-image', `url('${movie.background}')`);
-                            }
-                        }
-                    })
-                    .catch(err => console.error("TMDB Fetch Error:", err));
-            }
-            
-            card.appendChild(img);
-            
-            // Interaction: Change active movie
-            card.addEventListener('click', () => {
-                if (currentIndex !== index && !isTransitioning) {
-                    updateUI(index);
-                }
-            });
-            
-            carouselEl.appendChild(card);
+        // Calculate scroll position to keep it in view nicely
+        // We use scrollTo on the carouselEl directly instead of scrollIntoView
+        // to prevent the entire browser window from scrolling vertically.
+        carouselEl.scrollTo({
+          left:
+            card.offsetLeft - carouselEl.clientWidth / 2 + card.clientWidth / 2,
+          behavior: "smooth",
         });
-    }
-
-    function triggerAnimations() {
-        const elementsToAnimate = [titleEl, document.querySelector('.meta-data'), descEl, document.querySelector('.actions')];
-        
-        elementsToAnimate.forEach(el => {
-            if(!el) return;
-            // Remove the class
-            el.classList.remove('fade-in-up');
-            // Trigger a reflow
-            void el.offsetWidth;
-            // Add the class back
-            el.classList.add('fade-in-up');
-        });
-    }
-
-    // Update main stage and background
-    function updateUI(index) {
-        if(index < 0 || index >= movies.length) return;
-        
-        isTransitioning = true;
-        currentIndex = index;
-        const movie = movies[index];
-        
-        // Handle both original JSON and the new TMDB JSON structure seamlessly
-        const mTitle = movie.title || movie.original_title || "Unknown Title";
-        const mRating = movie.vote_average !== undefined ? movie.vote_average.toString() : movie.rating;
-        const mYear = movie.release_date ? (movie.release_date.split('/')[2] || movie.release_date.substring(0,4)) : movie.year;
-        
-        let mDuration = movie.duration;
-        if (movie.runtime !== undefined) {
-            const hours = Math.floor(movie.runtime / 60);
-            const mins = movie.runtime % 60;
-            mDuration = `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins !== 1 ? 's' : ''}`;
-        }
-        
-        const mGenre = movie.genres || movie.genre || 'Unknown Genre';
-        const mDesc = movie.overview || movie.description || 'No description available for this movie.';
-
-        // Background transition - Safe fallbacks for missing image URLs
-        const safeTitleQuery = encodeURIComponent(mTitle);
-        const defaultBg = `https://placehold.co/1920x1080/050505/333333?text=${safeTitleQuery}`;
-        const bgUrl = movie.background || movie.poster || defaultBg;
-        
-        bgContainer.style.setProperty('--bg-image', `url('${bgUrl}')`);
-        
-        // Text changes
-        titleEl.textContent = mTitle;
-        ratingEl.textContent = mRating;
-        yearEl.textContent = mYear;
-        durationEl.textContent = mDuration;
-        genreEl.textContent = mGenre;
-        descEl.textContent = mDesc;
-
-        // Animate newly inserted text
-        triggerAnimations();
-
-        // Update active class on carousel items
-        const cards = carouselEl.querySelectorAll('.poster-card');
-        cards.forEach((card, i) => {
-            if (i === index) {
-                card.classList.add('active');
-                
-                // Calculate scroll position to keep it in view nicely
-                // We use scrollTo on the carouselEl directly instead of scrollIntoView
-                // to prevent the entire browser window from scrolling vertically.
-                carouselEl.scrollTo({
-                    left: card.offsetLeft - (carouselEl.clientWidth / 2) + (card.clientWidth / 2),
-                    behavior: 'smooth'
-                });
-            } else {
-                card.classList.remove('active');
-            }
-        });
-
-        // Throttle rapid clicks
-        setTimeout(() => {
-            isTransitioning = false;
-        }, 400); // Matches transition speed
-    }
-
-    // Listeners for Chevron Navigation
-    prevBtn.addEventListener('click', () => {
-        if (movies.length === 0 || isTransitioning) return;
-        let newIndex = currentIndex - 1;
-        if (newIndex < 0) newIndex = movies.length - 1; // loop
-        updateUI(newIndex);
+      } else {
+        card.classList.remove("active");
+      }
     });
 
-    nextBtn.addEventListener('click', () => {
-        if (movies.length === 0 || isTransitioning) return;
-        let newIndex = currentIndex + 1;
-        if (newIndex >= movies.length) newIndex = 0; // loop
-        updateUI(newIndex);
-    });
+    // Throttle rapid clicks
+    setTimeout(() => {
+      isTransitioning = false;
+    }, 400); // Matches transition speed
+  }
 
-    // Keyboard support
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') {
-            prevBtn.click();
-        } else if (e.key === 'ArrowRight') {
-            nextBtn.click();
-        }
-    });
+  // Listeners for Chevron Navigation
+  prevBtn.addEventListener("click", () => {
+    if (movies.length === 0 || isTransitioning) return;
+    let newIndex = currentIndex - 1;
+    if (newIndex < 0) newIndex = movies.length - 1; // loop
+    updateUI(newIndex);
+  });
 
-    // Fire Fetch request
-    fetchMovies();
-    
-    // Ensure the page starts at the very top on reload
-    window.scrollTo(0, 0);
+  nextBtn.addEventListener("click", () => {
+    if (movies.length === 0 || isTransitioning) return;
+    let newIndex = currentIndex + 1;
+    if (newIndex >= movies.length) newIndex = 0; // loop
+    updateUI(newIndex);
+  });
+
+  // Keyboard support
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+      prevBtn.click();
+    } else if (e.key === "ArrowRight") {
+      nextBtn.click();
+    }
+  });
+
+  // Fire Fetch request
+  fetchMovies();
+
+  // Ensure the page starts at the very top on reload
+  window.scrollTo(0, 0);
 });
