@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const genreEl = document.getElementById("d-genre");
   const descEl = document.getElementById("d-desc");
 
-  // desc
+  // desc-2
 
   async function initDetails() {
     const urlParams = new URLSearchParams(window.location.search);
