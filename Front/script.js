@@ -82,33 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
         this.src = `https://placehold.co/140x210/1a1a2e/ffffff?text=${safeTitle}`;
       };
 
-      // Dynamic TMDB Fetch if images are missing
-      if (!movie.poster && movie.id) {
-        fetch(
-          `https://api.themoviedb.org/3/movie/${movie.id}?api_key=8265bd1679663a7ea12ac168da84d2e8`,
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.poster_path) {
-              movie.poster = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-              img.src = movie.poster; // Update carousel image live
-            }
-            if (data.backdrop_path) {
-              movie.background = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
-              // If this movie is currently active, instantly update its background without re-triggering text animations
-              if (index === currentIndex) {
-                document
-                  .querySelector(".background-container")
-                  .style.setProperty(
-                    "--bg-image",
-                    `url('${movie.background}')`,
-                  );
-              }
-            }
-          })
-          .catch((err) => console.error("TMDB Fetch Error:", err));
-      }
-
       card.appendChild(img);
 
       // Interaction: Change active movie
@@ -149,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentIndex = index;
     const movie = movies[index];
 
-    // Handle both original JSON and the new TMDB JSON structure seamlessly
+    // Handle both original JSON
     const mTitle = movie.title || movie.original_title || "Unknown Title";
     const mRating =
       movie.vote_average !== undefined
@@ -189,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const detailsBtn = document.getElementById("details-btn");
     if (detailsBtn) {
-      detailsBtn.href = `details.html?index=${index}`;
+      detailsBtn.href = `details.html?id=${movie.id}`;
     }
 
     // Animate newly inserted text
@@ -306,9 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         
         div.addEventListener("click", () => {
-          let originalIndex = movies.findIndex(m => String(m.id) === String(movie.id));
-          if (originalIndex === -1) originalIndex = 0; // fallback
-          window.location.href = `details.html?index=${originalIndex}&id=${movie.id}`;
+          window.location.href = `details.html?id=${movie.id}`;
         });
         searchDropdown.appendChild(div);
       });

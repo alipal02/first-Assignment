@@ -1,92 +1,39 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('add-movie-form');
-    const fetchImdbBtn = document.getElementById('fetch-imdb-btn');
+document.getElementById('add-movie-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    // Fetch from IMDb via TMDB proxy
-    if (fetchImdbBtn) {
-        fetchImdbBtn.addEventListener('click', async () => {
-            const imdbId = document.getElementById('imdb_id').value.trim();
-            if (!imdbId) {
-                if(window.notifier) window.notifier.showToast("Please enter an IMDb ID first", "error");
-                return;
-            }
+    const formData = new FormData(e.target);
+    
+    // Parse the form data safely
+    const payload = {
+        title: formData.get('title'),
+        year: parseInt(formData.get('year'), 10),
+        rating: formData.get('rating') ? parseFloat(formData.get('rating')) : undefined,
+        runtime: formData.get('duration') ? parseInt(formData.get('duration'), 10) : undefined,
+        genres: formData.get('genres') || undefined,
+        overview: formData.get('overview') || undefined,
+        poster: formData.get('poster') || undefined,
+        background: formData.get('background') || undefined
+    };
 
-            // Optional visual loading state
-            fetchImdbBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading';
-            fetchImdbBtn.disabled = true;
-
-            try {
-                const response = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?external_source=imdb_id&api_key=8265bd1679663a7ea12ac168da84d2e8`);
-                const data = await response.json();
-
-                if (data.movie_results && data.movie_results.length > 0) {
-                    const movie = data.movie_results[0];
-                    if (movie.poster_path) {
-                        document.getElementById('poster').value = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-                    }
-                    if (movie.backdrop_path) {
-                        document.getElementById('background').value = `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
-                    }
-                    if (window.notifier) window.notifier.showToast("Images successfully retrieved!", "success");
-                } else {
-                    if (window.notifier) window.notifier.showToast("No images found for this IMDb ID", "error");
-                }
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                if (window.notifier) window.notifier.showToast("Network error while trying to reach TMDB", "error");
-            } finally {
-                // Reset button state
-                fetchImdbBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Retrieve';
-                fetchImdbBtn.disabled = false;
-            }
-        });
-    }
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const title = document.getElementById('title').value.trim();
-        const rating = document.getElementById('rating').value.trim();
-        const year = document.getElementById('year').value.trim();
-        const duration = document.getElementById('duration').value.trim();
-        const genre = document.getElementById('genre').value.trim();
-        const description = document.getElementById('description').value.trim();
-        const poster = document.getElementById('poster').value.trim();
-        const background = document.getElementById('background').value.trim();
-
-        // Also pass IMDb ID if available into DB
-        const imdb_id = document.getElementById('imdb_id') ? document.getElementById('imdb_id').value.trim() : undefined;
-
-        const newMovie = {
-            title,
-            rating: parseFloat(rating) || undefined,
-            year: parseInt(year) || undefined,
-            duration,
-            genre,
-            description,
-            poster: poster || "",
-            background: background || "",
-            imdb_id: imdb_id
-        };
-
-        fetch('/movies', {
+    try {
+        const res = await fetch('/movies', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newMovie)
-        }).then(res => {
-            if (res.ok) {
-                if (window.notifier) window.notifier.showToast("Movie added successfully!", "success");
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000); // Wait a second to read toast
-            } else {
-                res.json().then(data => {
-                    if (window.notifier) window.notifier.showToast("Error: " + data.error, "error");
-                });
-            }
-        }).catch(err => {
-            console.error("Network Error:", err);
-            if (window.notifier) window.notifier.showToast("Network Error", "error");
+            body: JSON.stringify(payload)
         });
-    });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            window.showToast("Movie added successfully!", "success");
+            setTimeout(() => {
+                window.location.href = `details.html?id=${data.movie.id}`;
+            }, 1000);
+        } else {
+            window.showToast(data.error || "Failed to add movie", "error");
+        }
+    } catch(err) {
+        console.error(err);
+        window.showToast("An unexpected error occurred", "error");
+    }
 });

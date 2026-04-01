@@ -1,98 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movie Details - StreamVault</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    .details-container {
-      display: flex;
-      gap: 50px;
-      align-items: flex-start;
-      margin-top: 20px;
-    }
-    .details-poster {
-      width: 300px;
-      border-radius: 14px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-      flex-shrink: 0;
-    }
-    .details-info {
-      flex: 1;
-    }
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 1.1rem;
-      margin-bottom: 20px;
-      transition: color 0.3s;
-    }
-    .back-btn:hover {
-      color: white;
-    }
-    @media (max-width: 768px) {
-      .details-container {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="background-container" id="bg-container">
-    <div class="overlay"></div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StreamVault - Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-container" id="bg-container">
+      <div class="overlay" style="background: linear-gradient(to right, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.8) 50%, rgba(0,0,0,0.5) 100%);"></div>
+    </div>
 
-  <div class="app-container">
-    <header>
-      <div class="logo">
-        <span class="badge">NEW</span>
-        <span class="logo-text">MOVIE</span>
-      </div>
-    </header>
+    <div class="app-container" style="padding-top: 2rem;">
+      <header>
+        <a href="index.html" class="logo" style="text-decoration: none; color: white;">
+          <span class="badge">BACK</span>
+          <span class="logo-text">HOME</span>
+        </a>
+      </header>
 
-    <main style="max-width: 1000px; margin: 0 auto; width: 100%;">
-      <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
-      
-      <div class="details-container">
-        <img id="d-poster" class="details-poster skeleton" src="" alt="Poster" />
-        
-        <div class="details-info">
-          <h1 id="d-title" class="skeleton skeleton-text"></h1>
-          
-          <div class="meta-data">
-            <span class="imdb">IMDb</span>
-            <span id="d-rating" class="skeleton skeleton-text skeleton-small"></span>
-            <span class="dot">•</span>
-            <span id="d-year" class="skeleton skeleton-text skeleton-small"></span>
-            <span class="dot">•</span>
-            <span id="d-duration" class="skeleton skeleton-text skeleton-small"></span>
-            <span class="dot">•</span>
-            <span id="d-genre" class="skeleton skeleton-text skeleton-small"></span>
-          </div>
-
-          <p id="d-desc" class="description skeleton skeleton-text skeleton-large" style="-webkit-line-clamp: unset; line-clamp: unset;"></p>
-          
-          <div class="actions" style="margin-top: 30px; display: flex; gap: 15px;">
-            <a href="#" id="edit-btn" class="nav-btn" style="width: auto; padding: 0 25px; background: rgba(255, 255, 255, 0.1); font-weight: 700; text-decoration: none;">
-              <i class="fa-solid fa-pen" style="margin-right: 8px;"></i> EDIT
-            </a>
-            <button id="delete-btn" class="nav-btn" style="width: auto; padding: 0 25px; background: rgba(255, 71, 87, 0.1); color: #ff4757; border-color: rgba(255, 71, 87, 0.3); font-weight: 700;">
-              <i class="fa-solid fa-trash" style="margin-right: 8px;"></i> DELETE
-            </button>
-          </div>
+      <main style="max-width: none; width: 100%; align-items: center; padding-top: 20px;">
+        <div id="loading" style="text-align:center; padding: 100px;">
+           <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color:var(--primary-yellow);"></i>
         </div>
-      </div>
-    </main>
-  </div>
 
-  <script src="notifications.js"></script>
-  <script src="details.js"></script>
-</body>
+        <div class="details-wrapper" id="details-wrapper" style="display: none;">
+            <div class="details-poster">
+                <img id="d-poster" src="" alt="Poster" onerror="this.src='https://placehold.co/300x450/1a1a2e/ffffff?text=N/A'" />
+            </div>
+            <div class="details-content">
+                <h1 id="d-title">Loading...</h1>
+                <div class="meta-data" id="d-meta"></div>
+                <p class="description" id="d-desc"></p>
+                <div class="details-actions">
+                    <a href="#" class="btn-secondary" id="edit-btn"><i class="fa-solid fa-pen"></i> Edit</a>
+                    <button class="btn-danger" id="delete-btn"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal-box">
+            <h3>Delete Movie?</h3>
+            <p>This action cannot be undone. Are you sure you want to permanently delete this movie?</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-cancel" id="cancel-delete">Cancel</button>
+                <button class="modal-btn modal-confirm" id="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="details.js"></script>
+  </body>
 </html>

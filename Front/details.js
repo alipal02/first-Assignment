@@ -1,193 +1,73 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const bgContainer = document.getElementById("bg-container");
-  const posterEl = document.getElementById("d-poster");
-  const titleEl = document.getElementById("d-title");
-  const ratingEl = document.getElementById("d-rating");
-  const yearEl = document.getElementById("d-year");
-  const durationEl = document.getElementById("d-duration");
-  const genreEl = document.getElementById("d-genre");
-  const descEl = document.getElementById("d-desc");
-  const editBtn = document.getElementById("edit-btn");
-  const deleteBtn = document.getElementById("delete-btn");
+document.addEventListener("DOMContentLoaded", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
 
-  let currentMovie = null;
-
-  async function initDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const indexStr = urlParams.get("index");
-
-    if (!indexStr) {
-      handleError("Movie index not provided in URL.");
-      return;
+    if (!id) {
+        window.location.href = "index.html";
+        return;
     }
-
-    const targetIndex = parseInt(indexStr, 10);
 
     try {
-      const response = await fetch("/movies");
-      const movies = await response.json();
-
-      if (targetIndex >= 0 && targetIndex < movies.length) {
-        renderMovie(movies[targetIndex]);
-      } else {
-        handleError("Movie not found.");
-      }
-    } catch (err) {
-      console.error(err);
-      handleError("Could not load movie data.");
+        const res = await fetch(`/movies/${id}`);
+        if (!res.ok) throw new Error("Movie not found");
+        const movie = await res.json();
+        
+        const safeTitle = encodeURIComponent(movie.title || movie.original_title || "Movie");
+        
+        document.getElementById('d-poster').src = movie.poster || `https://placehold.co/300x450/1a1a2e/ffffff?text=${safeTitle}`;
+        
+        const bgUrl = movie.background || movie.poster || `https://placehold.co/1920x1080/050505/333333?text=${safeTitle}`;
+        document.getElementById('bg-container').style.setProperty('--bg-image', `url('${bgUrl}')`);
+        
+        document.getElementById('d-title').textContent = movie.title || movie.original_title || "Unknown";
+        
+        let mDuration = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : (movie.duration || "N/A");
+        let mYear = movie.year || (movie.release_date || "").substring(0, 4) || "N/A";
+        let mRating = movie.rating !== undefined ? movie.rating : (movie.vote_average || "N/A");
+        let mGenre = movie.genres || movie.genre || "N/A";
+        
+        document.getElementById('d-meta').innerHTML = `
+            <span class="imdb">IMDb</span> ${mRating} 
+            <span class="dot">•</span> ${mYear} 
+            <span class="dot">•</span> ${mDuration} 
+            <span class="dot">•</span> ${mGenre}
+        `;
+        
+        document.getElementById('d-desc').textContent = movie.overview || movie.description || "No description available.";
+        
+        document.getElementById('edit-btn').href = `edit.html?id=${id}`;
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('details-wrapper').style.display = 'flex';
+        
+    } catch(e) {
+        window.showToast("Failed to load details. " + e.message, "error");
+        setTimeout(() => window.location.href = "index.html", 2000);
     }
-  }
-
-  function renderMovie(movie) {
-    currentMovie = movie;
-
-    if (editBtn) {
-      editBtn.href = `edit.html?id=${movie.id}`;
-    }
-
-    // Remove skeletons
-    document.querySelectorAll(".skeleton").forEach((el) => {
-      el.classList.remove(
-        "skeleton",
-        "skeleton-text",
-        "skeleton-small",
-        "skeleton-large",
-      );
+    
+    // Modal Logic
+    const deleteModal = document.getElementById('delete-modal');
+    
+    document.getElementById('delete-btn').addEventListener('click', () => {
+        deleteModal.classList.add('show');
     });
-
-    const mTitle = movie.title || movie.original_title || "Unknown Title";
-    const mRating =
-      movie.vote_average !== undefined
-        ? movie.vote_average.toString()
-        : movie.rating;
-    const mYear = movie.release_date
-      ? movie.release_date.split("/")[2] || movie.release_date.substring(0, 4)
-      : movie.year;
-
-    let mDuration = movie.duration;
-    if (movie.runtime !== undefined) {
-      const hours = Math.floor(movie.runtime / 60);
-      const mins = movie.runtime % 60;
-      mDuration = `${hours} hour${hours > 1 ? "s" : ""} ${mins} minute${mins !== 1 ? "s" : ""}`;
-    }
-
-    const mGenre = movie.genres || movie.genre || "Unknown Genre";
-    const mDesc =
-      movie.overview ||
-      movie.description ||
-      "No description available for this movie.";
-
-    titleEl.textContent = mTitle;
-    ratingEl.textContent = mRating;
-    yearEl.textContent = mYear;
-    durationEl.textContent = mDuration;
-    genreEl.textContent = mGenre;
-    descEl.textContent = mDesc;
-
-    const safeTitleQuery = encodeURIComponent(mTitle);
-
-    // Default fallback
-    let posterUrl =
-      movie.poster ||
-      `https://placehold.co/300x450/1a1a2e/ffffff?text=${safeTitleQuery}`;
-    let bgUrl =
-      movie.background ||
-      movie.poster ||
-      `https://placehold.co/1920x1080/050505/333333?text=${safeTitleQuery}`;
-
-    // If TMDB and standard poster missing, fetch it
-    if (!movie.poster && movie.id && !movie.imdb_id) {
-      fetch(
-        `https://api.themoviedb.org/3/movie/${movie.id}?api_key=8265bd1679663a7ea12ac168da84d2e8`,
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.poster_path) {
-            posterEl.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-          }
-          if (data.backdrop_path) {
-            bgContainer.style.setProperty(
-              "--bg-image",
-              `url('https://image.tmdb.org/t/p/original${data.backdrop_path}')`,
-            );
-          }
-        })
-        .catch((err) => console.error(err));
-    }
-
-    // Try falling back to IMDb if present
-    if (!movie.poster && movie.imdb_id) {
-      fetch(`https://api.themoviedb.org/3/find/${movie.imdb_id}?external_source=imdb_id&api_key=8265bd1679663a7ea12ac168da84d2e8`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.movie_results && data.movie_results.length > 0) {
-                const results = data.movie_results[0];
-                if (results.poster_path) posterEl.src = `https://image.tmdb.org/t/p/w500${results.poster_path}`;
-                if (results.backdrop_path) bgContainer.style.setProperty("--bg-image", `url('https://image.tmdb.org/t/p/original${results.backdrop_path}')`);
+    
+    document.getElementById('cancel-delete').addEventListener('click', () => {
+        deleteModal.classList.remove('show');
+    });
+    
+    document.getElementById('confirm-delete').addEventListener('click', async () => {
+        deleteModal.classList.remove('show');
+        try {
+            const delRes = await fetch(`/movies/${id}`, { method: 'DELETE' });
+            if (delRes.ok) {
+                window.showToast("Movie deleted successfully", "success");
+                setTimeout(() => window.location.href = "index.html", 1200);
+            } else {
+                window.showToast("Failed to delete movie", "error");
             }
-        }).catch(err => console.error(err));
-    }
-
-    posterEl.src = posterUrl;
-    bgContainer.style.setProperty("--bg-image", `url('${bgUrl}')`);
-  }
-
-  function handleError(msg) {
-    document.querySelectorAll(".skeleton").forEach((el) => {
-      el.classList.remove(
-        "skeleton",
-        "skeleton-text",
-        "skeleton-small",
-        "skeleton-large",
-      );
-    });
-    titleEl.textContent = "Error";
-    descEl.textContent = msg;
-    posterEl.style.display = "none";
-  }
-
-  // Delete Action
-  if (deleteBtn) {
-    deleteBtn.addEventListener('click', () => {
-      if (!currentMovie || !currentMovie.id) return;
-      
-      if (window.notifier) {
-        window.notifier.showConfirm(
-          "Delete Movie", 
-          `Are you sure you want to permanently delete "${currentMovie.title || currentMovie.original_title}"?`,
-          () => {
-            performDelete(currentMovie.id);
-          }
-        );
-      } else {
-        if (confirm("Are you sure you want to delete this movie?")) {
-          performDelete(currentMovie.id);
+        } catch(err) {
+            window.showToast("Error deleting movie", "error");
         }
-      }
     });
-  }
-
-  function performDelete(id) {
-    fetch(`/movies/${id}`, {
-      method: 'DELETE'
-    })
-    .then(res => {
-      if (res.ok) {
-        if (window.notifier) window.notifier.showToast("Movie deleted successfully!", "success");
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 1200);
-      } else {
-        res.json().then(data => {
-          if (window.notifier) window.notifier.showToast("Error executing delete: " + data.error, "error");
-        });
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      if (window.notifier) window.notifier.showToast("Network Error during deletion", "error");
-    });
-  }
-
-  initDetails();
 });
