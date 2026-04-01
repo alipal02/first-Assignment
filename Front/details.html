@@ -77,12 +77,22 @@
             <span id="d-genre" class="skeleton skeleton-text skeleton-small"></span>
           </div>
 
-          <p id="d-desc" class="description skeleton skeleton-text skeleton-large" style="-webkit-line-clamp: unset;"></p>
+          <p id="d-desc" class="description skeleton skeleton-text skeleton-large" style="-webkit-line-clamp: unset; line-clamp: unset;"></p>
+          
+          <div class="actions" style="margin-top: 30px; display: flex; gap: 15px;">
+            <a href="#" id="edit-btn" class="nav-btn" style="width: auto; padding: 0 25px; background: rgba(255, 255, 255, 0.1); font-weight: 700; text-decoration: none;">
+              <i class="fa-solid fa-pen" style="margin-right: 8px;"></i> EDIT
+            </a>
+            <button id="delete-btn" class="nav-btn" style="width: auto; padding: 0 25px; background: rgba(255, 71, 87, 0.1); color: #ff4757; border-color: rgba(255, 71, 87, 0.3); font-weight: 700;">
+              <i class="fa-solid fa-trash" style="margin-right: 8px;"></i> DELETE
+            </button>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
+  <script src="notifications.js"></script>
   <script src="details.js"></script>
 </body>
 </html>

@@ -1,16 +1,16 @@
 [
   {
-    "id": "1774821197625",
-    "title": "Minim ipsa accusant",
-    "year": 2017,
-    "duration": "Sed fugiat eveniet",
-    "genre": "Quam anim minima aut",
-    "description": "Sequi est tempor dic",
-    "poster": "https://www.jybos.me",
-    "background": "https://www.lideb.co"
+    "id": "1774824290367",
+    "title": "The lord of the rings (This is the best)",
+    "year": 1971,
+    "duration": "Magna ratione praese",
+    "genre": "Corporis sunt repel",
+    "description": "Anim blanditiis sunt",
+    "poster": "https://www.filmonpaper.com/wp-content/uploads/2011/05/TheLordOfTheRingsTheFellowshipOfTheRing_onesheet_advance_castmontage_Canada-3.jpg",
+    "background": "https://www.filmonpaper.com/wp-content/uploads/2011/05/TheLordOfTheRingsTheFellowshipOfTheRing_onesheet_advance_castmontage_Canada-3.jpg"
   },
   {
-    "id": 27205,
+    "id": "27205",
     "title": "Inception",
     "vote_average": 8.364,
     "vote_count": 34495,
@@ -215,29 +215,6 @@
     "production_countries": "United States of America",
     "spoken_languages": "English",
     "keywords": "spacecraft, based on comic, space, orphan, adventurer, aftercreditsstinger, duringcreditsstinger, marvel cinematic universe (mcu)"
-  },
-  {
-    "id": 680,
-    "title": "Pulp Fiction",
-    "vote_average": 8.488,
-    "vote_count": 25893,
-    "status": "Released",
-    "release_date": "9/10/1994",
-    "revenue": 213900000,
-    "runtime": 154,
-    "adult": false,
-    "budget": 8500000,
-    "imdb_id": "tt0110912",
-    "original_language": "en",
-    "original_title": "Pulp Fiction",
-    "overview": "A burger-loving hit man, his philosophical partner, a drug-addled gangster's moll and a washed-up boxer converge in this sprawling, comedic crime caper. Their adventures unfurl in three stories that ingeniously trip back and forth in time.",
-    "popularity": 74.862,
-    "tagline": "Just because you are a character doesn't mean you have character.",
-    "genres": "Thriller, Crime",
-    "production_companies": "Miramax, A Band Apart, Jersey Films",
-    "production_countries": "United States of America",
-    "spoken_languages": "English, Spanish, French",
-    "keywords": "drug dealer, boxer, massage, stolen money, briefcase, crime boss, redemption, heirloom, dance competition, los angeles, california, theft, nonlinear timeline, multiple storylines, neo-noir, hilarious"
   },
   {
     "id": 13,

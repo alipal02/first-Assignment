@@ -1,4 +1,4 @@
-document.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
   const bgContainer = document.getElementById("bg-container");
   const posterEl = document.getElementById("d-poster");
   const titleEl = document.getElementById("d-title");
@@ -7,8 +7,10 @@ document.onload = () => {
   const durationEl = document.getElementById("d-duration");
   const genreEl = document.getElementById("d-genre");
   const descEl = document.getElementById("d-desc");
+  const editBtn = document.getElementById("edit-btn");
+  const deleteBtn = document.getElementById("delete-btn");
 
-  // desc-2
+  let currentMovie = null;
 
   async function initDetails() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -37,6 +39,12 @@ document.onload = () => {
   }
 
   function renderMovie(movie) {
+    currentMovie = movie;
+
+    if (editBtn) {
+      editBtn.href = `edit.html?id=${movie.id}`;
+    }
+
     // Remove skeletons
     document.querySelectorAll(".skeleton").forEach((el) => {
       el.classList.remove(
@@ -88,7 +96,7 @@ document.onload = () => {
       `https://placehold.co/1920x1080/050505/333333?text=${safeTitleQuery}`;
 
     // If TMDB and standard poster missing, fetch it
-    if (!movie.poster && movie.id) {
+    if (!movie.poster && movie.id && !movie.imdb_id) {
       fetch(
         `https://api.themoviedb.org/3/movie/${movie.id}?api_key=8265bd1679663a7ea12ac168da84d2e8`,
       )
@@ -105,6 +113,19 @@ document.onload = () => {
           }
         })
         .catch((err) => console.error(err));
+    }
+
+    // Try falling back to IMDb if present
+    if (!movie.poster && movie.imdb_id) {
+      fetch(`https://api.themoviedb.org/3/find/${movie.imdb_id}?external_source=imdb_id&api_key=8265bd1679663a7ea12ac168da84d2e8`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.movie_results && data.movie_results.length > 0) {
+                const results = data.movie_results[0];
+                if (results.poster_path) posterEl.src = `https://image.tmdb.org/t/p/w500${results.poster_path}`;
+                if (results.backdrop_path) bgContainer.style.setProperty("--bg-image", `url('https://image.tmdb.org/t/p/original${results.backdrop_path}')`);
+            }
+        }).catch(err => console.error(err));
     }
 
     posterEl.src = posterUrl;
@@ -125,5 +146,48 @@ document.onload = () => {
     posterEl.style.display = "none";
   }
 
+  // Delete Action
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      if (!currentMovie || !currentMovie.id) return;
+      
+      if (window.notifier) {
+        window.notifier.showConfirm(
+          "Delete Movie", 
+          `Are you sure you want to permanently delete "${currentMovie.title || currentMovie.original_title}"?`,
+          () => {
+            performDelete(currentMovie.id);
+          }
+        );
+      } else {
+        if (confirm("Are you sure you want to delete this movie?")) {
+          performDelete(currentMovie.id);
+        }
+      }
+    });
+  }
+
+  function performDelete(id) {
+    fetch(`/movies/${id}`, {
+      method: 'DELETE'
+    })
+    .then(res => {
+      if (res.ok) {
+        if (window.notifier) window.notifier.showToast("Movie deleted successfully!", "success");
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1200);
+      } else {
+        res.json().then(data => {
+          if (window.notifier) window.notifier.showToast("Error executing delete: " + data.error, "error");
+        });
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (window.notifier) window.notifier.showToast("Network Error during deletion", "error");
+    });
+  }
+
   initDetails();
-};
+});

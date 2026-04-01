@@ -1,6 +1,54 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('add-movie-form');
+document.addEventListener('DOMContentLoaded', async () => {
+    const form = document.getElementById('edit-movie-form');
     const fetchImdbBtn = document.getElementById('fetch-imdb-btn');
+    
+    // Parse URL for Movie ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get("id");
+
+    if (!movieId) {
+        if (window.notifier) window.notifier.showToast("Movie ID is missing!", "error");
+        setTimeout(() => window.location.href = "index.html", 2000);
+        return;
+    }
+
+    // Pre-fill the form with existing movie data
+    try {
+        const res = await fetch(`/movies/${movieId}`);
+        if (!res.ok) throw new Error("Could not fetch movie details");
+        const movie = await res.json();
+
+        document.getElementById('title').value = movie.title || movie.original_title || "";
+        document.getElementById('rating').value = movie.vote_average !== undefined ? movie.vote_average : (movie.rating || "");
+        
+        let mYear = movie.year || "";
+        if (movie.release_date) {
+            mYear = movie.release_date.split("/")[2] || movie.release_date.substring(0, 4);
+        }
+        document.getElementById('year').value = mYear;
+        
+        let mDuration = movie.duration || "";
+        if (movie.runtime) {
+            const hours = Math.floor(movie.runtime / 60);
+            const mins = movie.runtime % 60;
+            mDuration = `${hours} hour${hours > 1 ? "s" : ""} ${mins} minute${mins !== 1 ? "s" : ""}`;
+        }
+        document.getElementById('duration').value = mDuration;
+        
+        document.getElementById('genre').value = movie.genres || movie.genre || "";
+        document.getElementById('description').value = movie.overview || movie.description || "";
+        document.getElementById('poster').value = movie.poster || "";
+        document.getElementById('background').value = movie.background || "";
+        
+        if (movie.imdb_id) {
+            const imdbEl = document.getElementById('imdb_id');
+            if(imdbEl) imdbEl.value = movie.imdb_id;
+        }
+
+    } catch (err) {
+        console.error(err);
+        if (window.notifier) window.notifier.showToast("Failed to load movie for editing.", "error");
+    }
 
     // Fetch from IMDb via TMDB proxy
     if (fetchImdbBtn) {
@@ -11,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Optional visual loading state
             fetchImdbBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading';
             fetchImdbBtn.disabled = true;
 
@@ -35,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Fetch Error:", err);
                 if (window.notifier) window.notifier.showToast("Network error while trying to reach TMDB", "error");
             } finally {
-                // Reset button state
                 fetchImdbBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Retrieve';
                 fetchImdbBtn.disabled = false;
             }
@@ -53,11 +99,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const description = document.getElementById('description').value.trim();
         const poster = document.getElementById('poster').value.trim();
         const background = document.getElementById('background').value.trim();
-
-        // Also pass IMDb ID if available into DB
         const imdb_id = document.getElementById('imdb_id') ? document.getElementById('imdb_id').value.trim() : undefined;
 
-        const newMovie = {
+        const updatedMovie = {
             title,
             rating: parseFloat(rating) || undefined,
             year: parseInt(year) || undefined,
@@ -69,16 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
             imdb_id: imdb_id
         };
 
-        fetch('/movies', {
-            method: 'POST',
+        fetch(`/movies/${movieId}`, {
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newMovie)
+            body: JSON.stringify(updatedMovie)
         }).then(res => {
             if (res.ok) {
-                if (window.notifier) window.notifier.showToast("Movie added successfully!", "success");
+                if (window.notifier) window.notifier.showToast("Movie updated successfully!", "success");
                 setTimeout(() => {
                     window.location.href = 'index.html';
-                }, 1000); // Wait a second to read toast
+                }, 1000);
             } else {
                 res.json().then(data => {
                     if (window.notifier) window.notifier.showToast("Error: " + data.error, "error");

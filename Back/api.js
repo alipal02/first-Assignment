@@ -88,8 +88,8 @@ async function handleApiRequest(req, res) {
             if (!body.title || typeof body.title !== 'string' || body.title.trim() === '') {
                 return sendResponse(res, 400, { error: '"title" is required and must be a valid string.' });
             }
-            if (body.year !== undefined && typeof body.year !== 'number') {
-                return sendResponse(res, 400, { error: '"year" must be a number.' });
+            if (typeof body.year !== 'number') {
+                return sendResponse(res, 400, { error: '"year" is required and must be a number.' });
             }
             if (body.rating !== undefined && typeof body.rating !== 'number') {
                 return sendResponse(res, 400, { error: '"rating" must be a number.' });
@@ -133,7 +133,7 @@ async function handleApiRequest(req, res) {
             return sendResponse(res, 200, { message: 'Movie deleted successfully', movie: deletedMovie });
         }
 
-        return sendResponse(res, 400, { error: 'Invalid operation on /movies. Check method/parameters.' });
+        return sendResponse(res, 404, { error: 'Route not found' });
 
     } catch (err) {
         if (err.name === 'SyntaxError') return sendResponse(res, 400, { error: 'Invalid JSON request body.' });

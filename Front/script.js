@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const carouselEl = document.getElementById("carousel");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
+  const searchInput = document.querySelector(".search-bar input");
+  const searchContainer = document.querySelector(".search-bar");
 
   // State Variables
   let movies = [];
@@ -239,6 +241,101 @@ document.addEventListener("DOMContentLoaded", () => {
       prevBtn.click();
     } else if (e.key === "ArrowRight") {
       nextBtn.click();
+    }
+  });
+
+  // Dropdown Autocomplete Search Feature
+  const searchDropdown = document.createElement("div");
+  searchDropdown.className = "search-dropdown";
+  searchContainer.appendChild(searchDropdown);
+
+  let searchTimeout;
+  
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    
+    clearTimeout(searchTimeout);
+
+    if (!query) {
+      searchDropdown.style.display = "none";
+      return;
+    }
+
+    // Show loading state immediately
+    searchDropdown.innerHTML = `
+      <div class="search-state loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span>Loading...</span>
+      </div>
+    `;
+    searchDropdown.style.display = "block";
+
+    // Debounce the fetch request
+    searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/movies?search=${encodeURIComponent(query)}&limit=10`);
+        if (!res.ok) throw new Error("Search failed");
+        const filtered = await res.json();
+
+    searchDropdown.innerHTML = "";
+
+    if (filtered.length === 0) {
+      searchDropdown.innerHTML = `
+        <div class="search-state empty">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>No results found</span>
+        </div>
+      `;
+      return;
+    }
+
+      filtered.forEach((movie) => {
+        const div = document.createElement("div");
+        div.className = "search-item";
+
+        // To fix broken thumbnail: Try to get the poster locally if it was already fetched by the carousel
+        const cachedMovie = movies.find(m => String(m.id) === String(movie.id)) || {};
+        let finalPoster = movie.poster || cachedMovie.poster;
+        
+        const safeTitleQuery = encodeURIComponent(movie.title || movie.original_title || "Movie");
+        const placeholder = `https://placehold.co/40x60/1a1a2e/ffffff?text=${safeTitleQuery}`;
+        
+        div.innerHTML = `
+          <img src="${finalPoster || placeholder}" alt="Poster" onerror="this.src='https://placehold.co/40x60/1a1a2e/ffffff?text=N/A'" />
+          <span>${movie.title || movie.original_title}</span>
+        `;
+        
+        div.addEventListener("click", () => {
+          let originalIndex = movies.findIndex(m => String(m.id) === String(movie.id));
+          if (originalIndex === -1) originalIndex = 0; // fallback
+          window.location.href = `details.html?index=${originalIndex}&id=${movie.id}`;
+        });
+        searchDropdown.appendChild(div);
+      });
+      
+      } catch(err) {
+        console.error(err);
+        searchDropdown.innerHTML = `
+          <div class="search-state error">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Something went wrong</span>
+          </div>
+        `;
+      }
+    }, 250); // 250ms debounce Wait
+  });
+
+  // Hide dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!searchContainer.contains(e.target)) {
+      searchDropdown.style.display = "none";
+    }
+  });
+
+  // Show dropdown when focused again if there's text
+  searchInput.addEventListener("focus", () => {
+    if (searchInput.value.trim() && searchDropdown.children.length > 0) {
+      searchDropdown.style.display = "block";
     }
   });
 

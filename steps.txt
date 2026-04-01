@@ -1,9 +1,0 @@
-1. Read the objective: Setup a simple Node.js server and document the steps.
-2. Kept the framework constraints in mind: Do NOT use Express.js or any other web frameworks based on previous instructions.
-3. Created a new file named `server.js` in the project root (`e:\first\server.js`).
-4. Imported the built-in native Node.js modules: `http` (to create the server), `fs` (to read files), and `path` (to handle directory structures).
-5. Configured the server to listen on port 3000.
-6. Implemented a dictionary of standard MIME types (`text/html`, `text/css`, `text/javascript`, etc.) so the browser renders files properly instead of treating them as plain text downloads.
-7. Wrote the request handling routing logic to dynamically convert incoming URLs to local file paths (mapping `/` to `/index.html`).
-8. Embedded basic error handling, including 404 (File Not Found) and 500 (Internal Server Error) handling.
-9. Created this `steps.txt` file to showcase the creation flow.
