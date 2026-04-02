@@ -24,7 +24,6 @@ body {
   user-select: none;
 }
 
-/* Background image handling */
 .background-container {
   position: fixed;
   top: 0;
@@ -65,7 +64,6 @@ body {
   width: 100%;
   height: 100%;
   z-index: 1;
-  /* Rich radial + linear gradient combo for high-end look */
   background:
     linear-gradient(
       to right,
@@ -82,7 +80,6 @@ body {
   pointer-events: none;
 }
 
-/* App Container Layout */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -92,7 +89,6 @@ body {
   z-index: 1;
 }
 
-/* Header */
 header {
   display: flex;
   justify-content: space-between;
@@ -127,7 +123,7 @@ header {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
-  border-radius: 50px; /* pill shape */
+  border-radius: 50px; 
   padding: 10px 20px;
   width: 280px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -165,7 +161,6 @@ header {
   color: #aaaaaa;
 }
 
-/* Search Autocomplete Dropdown */
 .search-dropdown {
   position: absolute;
   top: 100%;
@@ -219,7 +214,6 @@ header {
   border-radius: 4px;
 }
 
-/* Main Content Area */
 main {
   flex: 1;
   display: flex;
@@ -277,7 +271,6 @@ main {
   overflow: hidden;
 }
 
-/* Navigation Buttons */
 .actions {
   display: flex;
   gap: 15px;
@@ -311,7 +304,6 @@ main {
   transform: translateY(1px);
 }
 
-/* Footer & Carousel */
 footer {
   padding-bottom: 10px;
   margin-bottom: 0;
@@ -321,8 +313,7 @@ footer {
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  padding: 40px 10px; /* Increased vertical padding to prevent clipping of scaled cards */
-  /* Hide scrollbar */
+  padding: 40px 10px; 
   scrollbar-width: none;
   -ms-overflow-style: none;
   align-items: center;
@@ -358,7 +349,6 @@ footer {
   box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
 }
 
-/* The active state makes the card enlarge significantly */
 .poster-card.active {
   opacity: 1;
   transform: scale(1.15) translateY(-10px);
@@ -370,10 +360,9 @@ footer {
 }
 
 .poster-card.active img {
-  transform: scale(1.05); /* Slight internal zoom for dynamic feel */
+  transform: scale(1.05); 
 }
 
-/* Animations applied on movie change */
 .fade-in-up {
   animation: fadeInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
@@ -391,7 +380,6 @@ footer {
   }
 }
 
-/* Delay staggered animations */
 #m-title {
   animation-delay: 0.1s;
 }
@@ -405,7 +393,6 @@ footer {
   animation-delay: 0.4s;
 }
 
-/* Skeleton loaders */
 .skeleton {
   background: linear-gradient(
     90deg,
@@ -665,7 +652,6 @@ footer {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* CRUD Forms and Details Overrides */
 .form-container {
   background: var(--glass-bg);
   backdrop-filter: blur(25px);

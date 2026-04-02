@@ -3,7 +3,6 @@ document.getElementById('add-movie-form').addEventListener('submit', async (e) =
 
     const formData = new FormData(e.target);
     
-    // Parse the form data safely
     const payload = {
         title: formData.get('title'),
         year: parseInt(formData.get('year'), 10),

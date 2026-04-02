@@ -4,7 +4,6 @@ const url = require('url');
 
 const DB_PATH = path.join(__dirname, 'movies-db.json');
 
-// --- Helper Functions ---
 const readDB = () => {
     return new Promise((resolve, reject) => {
         fs.readFile(DB_PATH, 'utf8', (err, data) => {
@@ -46,7 +45,6 @@ const parseBody = (req) => {
     });
 };
 
-// --- Main API Handler ---
 async function handleApiRequest(req, res) {
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;

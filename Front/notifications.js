@@ -21,7 +21,6 @@ window.showToast = function(message, type = "success") {
     
     container.appendChild(toast);
     
-    // Trigger animation
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             toast.classList.add("show");

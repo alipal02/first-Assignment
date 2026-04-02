@@ -8,11 +8,11 @@ This project is a movie browsing application encompassing both a frontend and a 
 Because the frontend and backend are tightly integrated in a monolithic architecture, they both start with a single command. 
 
 1. Ensure you have Node.js installed on your machine.
-2. Open your terminal and navigate to the root directory of this project (`e:\first` or wherever it was cloned).
-3. Run the following command to start both the API and serve the frontend static files:
-   ```bash
-   node server.js
-   ```
+2. Clone this repository or open the project folder in your terminal.
+3. Run the following command:
+
+node server.js
+
 4. The server will start and listen on port **3000**.
    - **Frontend:** You can access the application interface by navigating your web browser to `http://localhost:3000/`
    - **Backend API:** The backend API base URL is available at `http://localhost:3000/movies`
@@ -58,7 +58,7 @@ When testing the **POST `/movies`** or **PATCH `/movies/:id`** endpoints, you sh
 ## Any assumptions you made
 **Was anything unclear? What did you assume?**
 
-- **Database:** I assumed that using a local JSON file (`movies-db.json`) as a makeshift database database was acceptable in place of a full SQL or NoSQL production database purely for learning native Node.js filesystem (`fs`) interactions.
+- **Database:** I assumed that using a local JSON file (`movies-db.json`) as a makeshift database was acceptable in place of a full SQL or NoSQL production database purely for learning native Node.js filesystem (`fs`) interactions.
 - **Serving the Frontend:** I assumed serving the frontend and API from the exact same Node.js server on standard port 3000 was the most sensible design since there are no heavy build tools (Webpack/Vite) required for the vanilla frontend.
 - **IDs:** I assumed sequential timestamps (`Date.now().toString()`) are perfectly functional as pseudorandom unique identifiers for newly created records rather than relying on external `uuid` packages.
 
@@ -66,14 +66,15 @@ When testing the **POST `/movies`** or **PATCH `/movies/:id`** endpoints, you sh
 **What did you not implement or simplify? Why?**
 
 - **Search Capabilities:** The `search` parameter performs a basic substring match instead of fuzzy finding. I simplified this to keep the API's sorting logic lightweight.
-- **No Authentication:** There is no user authentication, login system, or admin roles. Anyone can hit the API and add/delete records. This was excluded because it usually introduces extensive security considerations (like JWTs and password hashing) out of scope.
-- **Strict Data Sanitation:** While the API verifies data types (`number` vs `string`), it does not heavily sanitize against SQL injection or XSS payloads.
+
 
 ## Your progress
 **What you completed, what you didn’t, and why**
 
 - **Completed:** I successfully built a robust native Node.js API with zero external dependencies to handle all standard CRUD operations. I also successfully implemented bonus requirements for filtering limits (`?limit=x`) and searching (`?search=y`). The API successfully writes synchronously to the backend `JSON` file. Furthermore, the frontend correctly consumes these endpoints, displays lists, searches, deletes, and adds items.
-- **Didn't Complete:** Advanced caching mechanisms and production-grade file streaming. I skipped these because they overcomplicate the project file tree and would require tools beyond native Node APIs to do efficiently (e.g., Redis). 
+- **Didn't Complete:** 
+Poster Image
+Add poster_image using imdb_id + API
 
 ## Challenges you faced
 **What was hardest for you**

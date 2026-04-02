@@ -13,22 +13,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.querySelector(".search-bar input");
   const searchContainer = document.querySelector(".search-bar");
 
-  // State Variables
   let movies = [];
   let currentIndex = 0;
   let isTransitioning = false;
 
-  // Fetch movies from local JSON (or network endpoint)
   async function fetchMovies() {
     try {
-      // Fetch from the Native NodeJS backend API
       const response = await fetch("/movies");
       if (!response.ok) {
         throw new Error("Network response was not OK");
       }
       movies = await response.json();
 
-      // Initialization flow
       initApp();
     } catch (error) {
       console.error("Fetch error:", error);
@@ -105,16 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     elementsToAnimate.forEach((el) => {
       if (!el) return;
-      // Remove the class
       el.classList.remove("fade-in-up");
-      // Trigger a reflow
       void el.offsetWidth;
-      // Add the class back
       el.classList.add("fade-in-up");
     });
   }
 
-  // Update main stage and background
   function updateUI(index) {
     if (index < 0 || index >= movies.length) return;
 
@@ -122,7 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
     currentIndex = index;
     const movie = movies[index];
 
-    // Handle both original JSON
     const mTitle = movie.title || movie.original_title || "Unknown Title";
     const mRating =
       movie.vote_average !== undefined
@@ -145,14 +136,12 @@ document.addEventListener("DOMContentLoaded", () => {
       movie.description ||
       "No description available for this movie.";
 
-    // Background transition - Safe fallbacks for missing image URLs
     const safeTitleQuery = encodeURIComponent(mTitle);
     const defaultBg = `https://placehold.co/1920x1080/050505/333333?text=${safeTitleQuery}`;
     const bgUrl = movie.background || movie.poster || defaultBg;
 
     bgContainer.style.setProperty("--bg-image", `url('${bgUrl}')`);
 
-    // Text changes
     titleEl.textContent = mTitle;
     ratingEl.textContent = mRating;
     yearEl.textContent = mYear;
@@ -165,10 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
       detailsBtn.href = `details.html?id=${movie.id}`;
     }
 
-    // Animate newly inserted text
     triggerAnimations();
 
-    // Update active class on carousel items
     const cards = carouselEl.querySelectorAll(".poster-card");
     cards.forEach((card, i) => {
       if (i === index) {
@@ -187,13 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Throttle rapid clicks
     setTimeout(() => {
       isTransitioning = false;
-    }, 400); // Matches transition speed
+    }, 400); 
   }
 
-  // Listeners for Chevron Navigation
   prevBtn.addEventListener("click", () => {
     if (movies.length === 0 || isTransitioning) return;
     let newIndex = currentIndex - 1;
@@ -208,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUI(newIndex);
   });
 
-  // Keyboard support
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") {
       prevBtn.click();
@@ -217,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Dropdown Autocomplete Search Feature
   const searchDropdown = document.createElement("div");
   searchDropdown.className = "search-dropdown";
   searchContainer.appendChild(searchDropdown);
@@ -310,7 +293,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Fire Fetch request
   fetchMovies();
 
   // Ensure the page starts at the very top on reload
